@@ -12,36 +12,44 @@
 
 #include "fillit.h"
 
-static void	min_maxer(char *buf, int *mx)
+/*
+** get_piece_edges gives us the edge indexes of the piece, both x and y
+** Also, counts the width and height of the piece and inserts them
+** [0] = left index, [1] = right index, [2] = top index, [3] = bottom index
+*/
+
+static void	get_piece_edges(char *buf, int *edges, t_tetri *new)
 {
 	int	j;
 
 	j = 0;
-	mx[0] = 3;
-	mx[1] = 0;
-	mx[2] = 3;
-	mx[3] = 0;
+	edges[0] = 3;
+	edges[1] = 0;
+	edges[2] = 3;
+	edges[3] = 0;
 	while (j <= 18)
 	{
 		if (buf[j] == '#')
 		{
-			if (j % 5 < mx[0])
-				mx[0] = j % 5;
-			if (j % 5 > mx[1])
-				mx[1] = j % 5;
-			if (j / 5 < mx[2])
-				mx[2] = j / 5;
-			if (j / 5 > mx[3])
-				mx[3] = j / 5;
+			if (j % 5 < edges[0])
+				edges[0] = j % 5;
+			if (j % 5 > edges[1])
+				edges[1] = j % 5;
+			if (j / 5 < edges[2])
+				edges[2] = j / 5;
+			if (j / 5 > edges[3])
+				edges[3] = j / 5;
 		}
 		++j;
 	}
+	new->width = edges[1] - edges[0] + 1;
+	new->height = edges[3] - edges[2] + 1;
 }
 
-static t_tetri	*make_tetri(char *buf)
+static t_tetri	*make_tetri(char *buf, t_tetri **tetris, int current)
 {
 	t_tetri		*new;
-	int			mx[4];
+	int			edges[4];
 	int			i;
 	t_longlong	l;
 
@@ -49,16 +57,18 @@ static t_tetri	*make_tetri(char *buf)
 	i = 0;
 	new = (t_tetri *)malloc(sizeof(t_tetri));
 	if (!new)
+	{
+		while (--current >= 0)
+			free(tetris[current]);
 		return (NULL);
+	}
 	ft_bzero(new, sizeof(t_tetri));
-	min_maxer(buf, mx);
-	new->width = mx[1] - mx[0] + 1;
-	new->height = mx[3] - mx[2] + 1;
+	get_piece_edges(buf, edges, new);
 	while (i < 19)
 	{
 		if (buf[i] == '#')
-			new->bitf |= ((l << (16 * ((i / 5) - mx[2]))) \
-				<< (15 - i % 5 + mx[0]));
+			new->bitf |= ((l << (16 * ((i / 5) - edges[2]))) \
+				<< (15 - i % 5 + edges[0]));
 		++i;
 	}
 	return (new);
@@ -81,7 +91,9 @@ int	reader(int fd, t_tetri **tetris)
 		j = validater(buf);
 		if (!j)
 			return (-1);
-		tetris[i] = make_tetri(buf);
+		tetris[i] = make_tetri(buf, tetris, i);
+		if (tetris[i] == NULL)
+			return (-1);
 		tetris[i]->name = 'A' + i;
 		i++;
 		b_val = read(fd, buf, 21);

@@ -15,6 +15,7 @@
 void	error_message(void)
 {
 	ft_putendl("error");
+	sleep(10);
 	exit(0);
 }
 
@@ -29,7 +30,7 @@ int	main(int argc, char **argv)
 	ft_bzero(tetris, sizeof(tetris));
 	if (argc != 2)
 	{
-		ft_putendl("usage: fillit source_file");
+		ft_putendl("usage: ./fillit source_file");
 		exit(0);
 	}
 	file = argv[1];
@@ -41,5 +42,6 @@ int	main(int argc, char **argv)
 		error_message();
 	board_size = solver(tetris, pieces);
 	writer(tetris, board_size, pieces);
+	sleep(10);
 	return (0);
 }

@@ -62,7 +62,7 @@ static char	**new_board(int board_size)
 			while (--i >= 0)
 				free(board[i]);
 			free(board);
-			exit(0);
+			return (NULL);
 		}
 		ft_memset(board[i], '.', board_size);
 		i++;
@@ -76,6 +76,12 @@ void	writer(t_tetri **tetris, int board_size, int pieces)
 	int		i;
 
 	board = new_board(board_size);
+	if (board == NULL)
+	{
+		while (--pieces >= 0)
+			free(tetris[pieces]);
+		error_message();
+	}
 	i = 0;
 	while (i < pieces)
 	{
@@ -86,4 +92,6 @@ void	writer(t_tetri **tetris, int board_size, int pieces)
 	while (--board_size >= 0)
 		free(board[board_size]);
 	free(board);
+	while (--i >= 0)
+		free(tetris[i]);
 }
